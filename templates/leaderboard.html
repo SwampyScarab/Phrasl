@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaderboard</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Helvetica:wght@400;700&display=swap');
+        body {
+            font-family: 'Helvetica', sans-serif;
+            background-color: #f0f8ff;
+            color: #333;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            background-color: #ffffff;
+            width: 80%;
+            height: 80vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-sizing: border-box;
+            position: relative;
+        }
+        h1 {
+            font-size: 3em;
+            color: #2c3e50;
+            margin: 20px 0;
+        }
+        .points-tab {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-family: 'Helvetica', sans-serif;
+            font-size: 1.5em;
+            background-color: #e0f7fa;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .username-tab {
+            position: absolute;
+            top: 20px;
+            right: 160px;
+            font-family: 'Helvetica', sans-serif;
+            font-size: 1.5em;
+            background-color: #e0f7fa;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #ccc;
+            font-size: 1.2em;
+        }
+        th {
+            background-color: #e0f7fa;
+            color: #2c3e50;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="points-tab">
+            Points: {{ points }}
+        </div>
+        <div class="username-tab">
+            Username: {{ session['username'] }}
+        </div>
+        <h1>Leaderboard</h1>
+        <table>
+            <tr>
+                <th>Username</th>
+                <th>Points</th>
+            </tr>
+            {% for user in leaderboard %}
+            <tr>
+                <td>{{ user[0] }}</td>
+                <td>{{ user[1] }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</body>
+</html>

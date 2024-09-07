@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phrasl</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Helvetica:wght@400;700&display=swap');
+        body {
+            font-family: 'Helvetica', sans-serif;
+            background-color: #f0f8ff;
+            color: #333;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            background-color: #ffffff;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-sizing: border-box;
+            position: relative;
+        }
+        h1 {
+            font-size: 3em;
+            color: #2c3e50;
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            margin: 0;
+        }
+        .points-tab, .username-tab {
+            position: absolute;
+            top: 20px;
+            font-family: 'Helvetica', sans-serif;
+            font-size: 1.5em;
+            background-color: #e0f7fa;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .points-tab {
+            right: 20px;
+        }
+        .username-tab {
+            right: 160px;
+        }
+        .tabs {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+        }
+        .tabs a {
+            text-decoration: none;
+            color: #3498db;
+            font-size: 1.2em;
+        }
+        .word-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0;
+        }
+        .letter-box {
+            width: 60px;
+            height: 60px;
+            border: 2px solid #ccc;
+            margin: 5px;
+            font-size: 2em;
+            text-align: center;
+            line-height: 60px;
+            background-color: #e0f7fa;
+            color: #333;
+            border-radius: 5px;
+        }
+        .letter-box input {
+            width: 100%;
+            height: 100%;
+            border: none;
+            outline: none;
+            font-size: 1em;
+            text-align: center;
+            background-color: transparent;
+        }
+        p {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+        }
+        input[type="submit"] {
+            background-color: #3498db;
+            color: #ffffff;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.5em;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        input[type="submit"]:hover {
+            background-color: #2980b9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Phrasl</h1>
+        <div class="username-tab">
+            Username: {{ session['username'] }}
+        </div>
+        <div class="points-tab">
+            Points: {{ points }}
+        </div>
+        <div class="tabs">
+            {% if session['username'] %}
+                <a href="{{ url_for('index') }}">Phrasl</a>
+                <a href="{{ url_for('logout') }}">Logout</a>
+            {% else %}
+                <a href="{{ url_for('signup') }}">Signup</a>
+                <a href="{{ url_for('login') }}">Login</a>
+            {% endif %}
+            <a href="{{ url_for('leaderboard') }}">Leaderboard</a>
+        </div>
+        {% if session['username'] %}
+        <form method="post">
+            <div class="word-container">
+                {% for i, letter in word_tuples %}
+                <div class="letter-box">
+                    {% if letter == '_' %}
+                    <input type="text" name="guess_{{ i }}" maxlength="1">
+                    {% else %}
+                    {{ letter }}
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            <p>You have {{ guesses }} guesses left</p>
+
+            {% if message %}
+                <p>{{ message }}</p>
+            {% endif %}
+
+            {% if not game_over %}
+            <input type="submit" value="Submit">
+            {% endif %}
+        </form>
+        {% else %}
+        <p>Please <a href="{{ url_for('login') }}">login</a> or <a href="{{ url_for('signup') }}">signup</a> to play the game.</p>
+        {% endif %}
+    </div>
+</body>
+</html>

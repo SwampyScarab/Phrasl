@@ -1,0 +1,8 @@
+Phrasl is a word game similar to Wordle, but the key difference is, rather than guessing words, you can guess individual letters and short phrases (eg. 'ing', 'ed', etc..)
+The game is most similar to Hangman, but as an individual game
+You get 8 lives and the words are varying in length
+If a player guesses a correct letter, they do not lose lives, but if they guess incorrectly, they lose lives and chances
+player earns points if they win (points won = lives left over after winning) so if you run out of guesses, you don't gain or lose points
+by default, start at 0
+User account, email and password to sign in, but username can be anything, no age limit
+score tracking, and a live, real time leaderboard
