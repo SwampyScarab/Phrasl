@@ -3,7 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Phrasl</title>
+    <title>
+    {% block title %}
+        Phrasl
+    {% endblock %}
+    </title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Helvetica:wght@400;700&display=swap');
         body {
@@ -30,9 +34,6 @@
         h1 {
             font-size: 3em;
             color: #2c3e50;
-            position: absolute;
-            top: 20px;
-            left: 20px;
             margin: 0;
         }
         .points-tab, .username-tab {
@@ -95,8 +96,6 @@
             font-size: 1.2em;
         }
         .word-container {
-            display: flex;
-            justify-content: center;
             align-items: center;
             margin: 20px 0;
         }
@@ -149,9 +148,80 @@
             font-weight: bold;
 
         }
+                /* Table Styles */
+                table {
+            width: 80%;
+            max-width: 800px;
+            border-collapse: collapse;
+            margin: 20px auto;
+            background-color: #ffffff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        /* Header Styles */
+        thead {
+            background-color: #3498db;
+            color: #ffffff;
+        }
+
+        th {
+            padding: 15px;
+            text-align: left;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 1.1em;
+        }
+
+        /* Body Styles */
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e0f7fa;
+            font-size: 1em;
+        }
+
+        /* Alternating Row Colors */
+        tbody tr:nth-child(even) {
+            background-color: #f8f8f8;
+        }
+
+        /* Hover Effect */
+        tbody tr:hover {
+            background-color: #e0f7fa;
+            transition: background-color 0.3s ease;
+        }
+
+        /* Last Row */
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Responsive Design */
+        @media screen and (max-width: 600px) {
+            table {
+                width: 95%;
+                font-size: 14px;
+            }
+            
+            th, td {
+                padding: 10px;
+            }
+        }
+
+        /* Optional: First Column Emphasis */
+        td:first-child {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        /* Optional: Last Column Styling */
+        td:last-child {
+            text-align: right;
+            color: #3498db;
+        }        
     </style>
-</head>
-<body>
     <div class="container">
         <a class = "headlink" href="{{ url_for('index') }}">Phrasl</a>
         <div class="username-tab">
@@ -170,50 +240,7 @@
             {% endif %}
    
         </div>
-        {% if session['username'] %}
-        <form method="post">
-            <div class="word-container">
-                {% for i, letter in word_tuples %}
-                <div class="letter-box">
-                    {% if letter == '_' %}
-                    <input type="text" name="guess_{{ i }}" maxlength="1">
-                    {% else %}
-                    {{ letter }}
-                    {% endif %}
-                </div>
-                {% endfor %}
-            </div>
-            <p>You have {{ guesses }} guesses left</p>
-
-            {% if message %}
-                <p>{{ message }}</p>
-            {% endif %}
-
-            {% if not game_over %}
-            <input type="submit" value="Submit">
-            {% endif %}
-        </form>
-        {% else %}
-        <p>Please <a href="{{ url_for('login') }}">login</a> or <a href="{{ url_for('signup') }}">signup</a> to play the game.</p>
-        {% endif %}
+        {% block content %} {%  endblock %}
     </div>
-    <script>
-        firstLetterbox = document.querySelector(".letter-box input")
-        firstLetterbox.focus()
-        allBox = document.querySelectorAll(".letter-box input")
-        allBox.forEach((element, i) => {
-            element.addEventListener("keyup", function(){
-                nextBox = allBox[i+1]
-                if (nextBox && event.which != 8){
-                    nextBox.focus()
-                }
-                preBox = allBox[i-1]
-                if (preBox && event.which == 8){
-                    preBox.focus()     
-                }       
-            })
-        });
-
-    </script>
 </body>
 </html>

@@ -3,13 +3,25 @@ import psycopg2
 from werkzeug.security import generate_password_hash, check_password_hash
 import random
 import csv
-import os
+from flask_mail import Mail, Message
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
 
+# Configure Flask-Mail
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = 'vibhavgithub@gmail.com'  # SMTP server email
+app.config['MAIL_PASSWORD'] = 'olfq iecl dqzv fpbg'  # SMTP server password
+app.config['MAIL_DEFAULT_SENDER'] = 'your_email@gmail.com'  # Default sender email
+app.config['MAIL_DEBUG'] = True
+app.config['MAIL_SUPPRESS_SEND'] = False
+app.config['TESTING'] = False
+mail = Mail(app)
+
 # Connect to PostgreSQL
-conn = psycopg2.connect("dbname=game_db user=your_user password=your_password")
+conn = psycopg2.connect("dbname=game_db user=your_user password=your_password host=localhost")
 cursor = conn.cursor()
 
 # Create users table if it doesn't exist
@@ -26,12 +38,20 @@ cursor.execute('''
 ''')
 conn.commit()
 
+# Check if 'reset_token' column exists and add it if not
+cursor.execute("SELECT column_name FROM information_schema.columns WHERE table_name='users'")
+columns = [row[0] for row in cursor.fetchall()]
+
+if 'reset_token' not in columns:
+    cursor.execute("ALTER TABLE users ADD COLUMN reset_token VARCHAR(255)")
+    conn.commit()
+
 # Load words from CSV file
 Allwords = []
 with open('/Users/vasanthgovindappa/Desktop/Phrasl/words4K.csv', newline='') as csvfile:
     csvreader = csv.reader(csvfile)
     for row in csvreader:
-        Allwords.append(row[0])  # Assuming each row is a list with one element
+        Allwords.append(row[0])
 
 # Initialize game variables
 word = ''
@@ -75,6 +95,49 @@ def logout():
     session.pop('user_id', None)
     session.pop('username', None)
     return redirect(url_for('index'))
+
+@app.route('/forgot_password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'POST':
+        email = request.form['email']
+        cursor.execute('SELECT * FROM users WHERE email = %s', (email,))
+        user = cursor.fetchone()
+        if user:
+            token = generate_password_hash(email + str(random.random()))
+            cursor.execute('UPDATE users SET reset_token = %s WHERE email = %s', (token, email))
+            conn.commit()
+            send_password_reset_email(email, user[5], token)  # Pass username to the email function
+            return 'A password reset link has been sent to your email.'
+        else:
+            return 'Email not found.'
+    return render_template('forgot_password.html')
+
+@app.route('/reset_password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    if request.method == 'POST':
+        new_password = generate_password_hash(request.form['password'])
+        cursor.execute('SELECT email FROM users WHERE reset_token = %s', (token,))
+        user = cursor.fetchone()
+        if user:
+            cursor.execute('UPDATE users SET password = %s, reset_token = NULL WHERE email = %s', (new_password, user[0]))
+            conn.commit()
+            return redirect(url_for('login'))
+        else:
+            return 'Invalid or expired token.'
+    return render_template('reset_password.html')
+
+@app.route('/forgot_username', methods=['GET', 'POST'])
+def forgot_username():
+    if request.method == 'POST':
+        email = request.form['email']
+        cursor.execute('SELECT username FROM users WHERE email = %s', (email,))
+        user = cursor.fetchone()
+        if user:
+            send_username_email(email, user[0])
+            return 'Your username has been sent to your email.'
+        else:
+            return 'Email not found.'
+    return render_template('forgot_username.html')
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -123,7 +186,7 @@ def index():
 def leaderboard():
     cursor.execute('SELECT username, points FROM users ORDER BY points DESC')
     leaderboard = cursor.fetchall()
-    return render_template('leaderboard.html', leaderboard=leaderboard)
+    return render_template('leaderboard.html', leaderboard=leaderboard,)
 
 def update_user_points(username, points):
     cursor.execute('UPDATE users SET points = points + %s WHERE username = %s', (points, username))
@@ -132,6 +195,28 @@ def update_user_points(username, points):
 def get_user_points(username):
     cursor.execute('SELECT points FROM users WHERE username = %s', (username,))
     return cursor.fetchone()[0]
+
+def send_password_reset_email(email, username, token):
+    msg = Message('Password Reset Request', recipients=[email])
+    msg.body = f"Hello {username}, a request has been received to reset your password. Please use the following link to reset your password: http://localhost:5001/reset_password/{token}"
+    try:
+        mail.send(msg)
+        print(f"Password reset email sent to {email}")
+    except Exception as e:
+        print(f"Error sending password reset email to {email}: {e}")
+
+def send_username_email(email, username):
+    msg = Message('Your Username', recipients=[email])
+    msg.body = f"Hello, your username is: {username}"
+    try:
+        mail.send(msg)
+        print(f"Username recovery email sent to {email}")
+    except Exception as e:
+        print(f"Error sending username recovery email to {email}: {e}")
+
+@app.context_processor
+def every_context():
+  return {'points': get_user_points(session['username'])}
 
 if __name__ == '__main__':
     app.run(debug=True, port=5001)
